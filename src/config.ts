@@ -13,6 +13,8 @@ export interface VwapReversionConfig extends StrategyConfig {
   VWAP_MAX_HOLD_BARS: number;
   VWAP_COOLDOWN_BARS: number;
   VWAP_MIN_RISK_RATIO: number;
+  VWAP_REQUIRE_PRICE_REVERSAL: boolean;
+  VWAP_MIN_SESSION_BARS_LEFT: number;
   MAX_LOSS_VALUE: number;
   RISK_FEE_RATE: number;
   RISK_SLIPPAGE_BPS: number;
@@ -22,10 +24,12 @@ export const defaultConfig: VwapReversionConfig = {
   INTERVAL: "15",
   BACKTEST_PRICE_MODE: "close",
   BACKTEST_ENTRY_DELAY_BARS: 0,
+  VWAP_REQUIRE_PRICE_REVERSAL: true,
+  VWAP_MIN_SESSION_BARS_LEFT: 1,
   VWAP_BAND_MULT: 2,
   VWAP_MIN_VOLUME_BARS: 8,
-  VWAP_ER_PERIOD: 16,
-  VWAP_MAX_ER: 0.3,
+  VWAP_ER_PERIOD: 8,
+  VWAP_MAX_ER: 0.2,
   VWAP_MAX_EXCURSION_BARS: 8,
   VWAP_STOP_BUFFER_PCT: 0.1,
   VWAP_MAX_HOLD_BARS: 16,
@@ -39,6 +43,13 @@ export const defaultConfig: VwapReversionConfig = {
 const parseShape = createStrategyConfigParser({
   strategyName: STRATEGY_NAME,
   defaults: defaultConfig,
+  // The shared backtest/runtime runner adds these execution switches before
+  // constructing a core. They are not strategy parameters.
+  optionalScalarFields: {
+    ENV: "string",
+    MAKE_ORDERS: "boolean",
+    CLOSE_OPPOSITE_POSITIONS: "boolean",
+  },
 });
 export function parseConfig(input: unknown): VwapReversionConfig {
   const config = parseShape(input);
@@ -53,6 +64,7 @@ export function parseConfig(input: unknown): VwapReversionConfig {
     "VWAP_MAX_EXCURSION_BARS",
     "VWAP_MAX_HOLD_BARS",
     "VWAP_COOLDOWN_BARS",
+    "VWAP_MIN_SESSION_BARS_LEFT",
   ] as const) {
     if (
       !Number.isInteger(config[key]) ||

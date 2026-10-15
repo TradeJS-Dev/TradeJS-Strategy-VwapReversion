@@ -17,7 +17,12 @@ export function bar(index, close = 100, volume = 100, step = STEP) {
 export function setup(side = "LONG", step = STEP) {
   return [
     ...Array.from({ length: 32 }, (_, i) =>
-      bar(i, i % 2 ? 101 : 99, 100, step),
+      bar(
+        i,
+        side === "SHORT" ? (i % 2 ? 99 : 101) : i % 2 ? 101 : 99,
+        100,
+        step,
+      ),
     ),
     bar(32, side === "LONG" ? 97.8 : 102.2, 1, step),
     bar(33, side === "LONG" ? 98.2 : 101.8, 1, step),

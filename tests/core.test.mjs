@@ -217,3 +217,14 @@ test("future backtest examples resolve to strict one-cell configs", async () => 
     assert.deepEqual(parseConfig(resolved), resolved);
   }
 });
+
+test("shared runtime execution switches are accepted without weakening unknown-field rejection", async () => {
+  const h = harness({
+    ENV: "BACKTEST",
+    MAKE_ORDERS: true,
+    CLOSE_OPPOSITE_POSITIONS: false,
+  });
+  assert.equal((await enter(h)).kind, "entry");
+  assert.throws(() => parseConfig({ MAKE_ORDER: true }), /not allowed/);
+  assert.throws(() => parseConfig({ MAKE_ORDERS: "true" }), /boolean/);
+});

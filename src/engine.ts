@@ -172,6 +172,7 @@ export function createVwapEngine({
     state.mean = mean;
     state.m2 = Math.max(0, m2);
     state.volumeBars++;
+    const previousClose = state.closes.at(-1);
     state.closes.push(close);
     state.closes = state.closes.slice(-(config.VWAP_ER_PERIOD + 1));
     const er =
@@ -196,7 +197,7 @@ export function createVwapEngine({
       sigma > 32 * Number.EPSILON * Math.max(1, Math.abs(mean)) &&
       Number.isFinite(upper) &&
       lower > 0 &&
-      utcDay(t + step) === day;
+      utcDay(t + step * config.VWAP_MIN_SESSION_BARS_LEFT) === day;
     const sample: VwapSample = {
       timestamp: t,
       vwap: mean,
@@ -235,6 +236,17 @@ export function createVwapEngine({
       if (inside) {
         state.pending = null;
         result.reason = "RETURN_PAST_TARGET";
+        if (
+          returning &&
+          config.VWAP_REQUIRE_PRICE_REVERSAL &&
+          (previousClose == null ||
+            (pending.direction === "LONG"
+              ? close <= previousClose
+              : close >= previousClose))
+        ) {
+          result.reason = "NO_PRICE_REVERSAL";
+          return done();
+        }
         if (returning) {
           const buffer = (close * config.VWAP_STOP_BUFFER_PCT) / 100;
           result.signal = {

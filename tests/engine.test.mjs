@@ -247,3 +247,45 @@ test("band overflow produces no non-finite chart data or JSON checkpoint values"
   assert.equal(result.sample, null);
   assert.deepEqual(JSON.parse(JSON.stringify(e.getState())), e.getState());
 });
+
+test("optional price confirmation rejects re-entry caused only by band expansion", () => {
+  const rows = setup().slice(0, -1);
+  const confirmation = bar(33, 97.7, 500);
+  const original = createVwapEngine({
+    config: { VWAP_REQUIRE_PRICE_REVERSAL: false, VWAP_MAX_ER: 1 },
+    initialCandles: rows,
+  });
+  assert.equal(original.next(confirmation).signal.direction, "LONG");
+  const confirmed = createVwapEngine({
+    config: { VWAP_REQUIRE_PRICE_REVERSAL: true, VWAP_MAX_ER: 1 },
+    initialCandles: rows,
+  });
+  const restored = createVwapEngine({
+    config: { VWAP_REQUIRE_PRICE_REVERSAL: true, VWAP_MAX_ER: 1 },
+    state: JSON.parse(JSON.stringify(confirmed.getState())),
+  });
+  const result = confirmed.next(confirmation);
+  assert.equal(result.signal, null);
+  assert.equal(result.reason, "NO_PRICE_REVERSAL");
+  assert.equal(confirmed.getState().pending, null);
+  assert.deepEqual(restored.next(confirmation), result);
+  for (const direction of ["LONG", "SHORT"]) {
+    const rows = setup(direction);
+    const engine = createVwapEngine({
+      config: { VWAP_REQUIRE_PRICE_REVERSAL: true, VWAP_MAX_ER: 1 },
+      initialCandles: rows.slice(0, -1),
+    });
+    assert.equal(engine.next(rows.at(-1)).signal.direction, direction);
+  }
+});
+
+test("session entry cutoff preserves the requested full bars after candle-close entry", () => {
+  const engine = createVwapEngine({
+    config: { VWAP_MIN_SESSION_BARS_LEFT: 8 },
+  });
+  let result;
+  for (let i = 0; i <= 87; i++) result = engine.next(bar(i, i % 2 ? 101 : 99));
+  assert.equal(result.sample.allowed, true); // 21:45 candle closes at 22:00 UTC
+  assert.equal(engine.next(bar(88, 99)).sample.allowed, false);
+  assert.equal(engine.getState().pending, null);
+});
