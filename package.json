@@ -1,0 +1,54 @@
+{
+  "name": "@tradejs/strategy-vwap-reversion",
+  "version": "0.0.0-development",
+  "private": true,
+  "description": "Closed-candle UTC-session VWAP mean reversion for TradeJS.",
+  "keywords": [
+    "ai",
+    "claude",
+    "codex"
+  ],
+  "type": "module",
+  "packageManager": "yarn@4.13.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "files": [
+    "dist",
+    "examples"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "devDependencies": {
+    "@tradejs/core": "^3.1.28",
+    "@tradejs/strategy-kit": "^3.0.6",
+    "@tradejs/types": "^3.1.28",
+    "prettier": "^3.6.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "build": "tsup",
+    "format:check": "prettier --check .",
+    "test": "node --test tests/*.test.mjs",
+    "typecheck": "tsc -p ./tsconfig.json --noEmit",
+    "checks": "yarn format:check && yarn typecheck && yarn build && yarn test",
+    "prettify": "prettier --write ."
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "license": "UNLICENSED",
+  "peerDependencies": {
+    "@tradejs/core": "^3.1.28",
+    "@tradejs/strategy-kit": "^3.0.6",
+    "@tradejs/types": "^3.1.28"
+  }
+}
