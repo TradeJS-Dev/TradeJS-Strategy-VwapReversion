@@ -3,15 +3,25 @@
 Самостоятельный пакет `@tradejs/strategy-vwap-reversion` для TradeJS.
 Стратегия торгует подтверждённый возврат к дневному VWAP по закрытым свечам.
 Основной интервал `15` означает 15 минут. Интервал `60` означает один час.
-Проведён ограниченный исторический тест на 180 днях. Устойчивость результата
+Проведены исторические проверки на 180 днях и всей доступной сохранённой истории. Устойчивость результата
 и низкая корреляция с CopyTrading не доказаны.
 Для часового интервала подтверждена только техническая корректность.
 
-Пакет имеет версию `0.0.0-development` и `private: true`. Он готов к локальному
-подключению, но ещё не опубликован. Пакет экспортирует `strategyEntries`,
-`defaultConfig`, строгий `parseConfig`, `createVwapReversionCore`, чистый
-`createVwapEngine` и `buildVwapFigures`. Runtime предоставляется приложением
-через `peerDependencies`. AI gate, усреднения и увеличения позиции здесь нет.
+Пакет экспортирует `strategyEntries`, `defaultConfig`, строгий `parseConfig`,
+`createVwapReversionCore`, чистый `createVwapEngine`, `buildVwapFigures`
+и необязательный локальный AI-gate. Runtime предоставляет приложение
+через `peerDependencies`. Усреднения и увеличения позиции нет.
+AI-gate выключен по умолчанию и остаётся исследовательским.
+
+```bash
+yarn add @tradejs/strategy-vwap-reversion
+```
+
+Для проверенной предварительной версии используйте
+`yarn add @tradejs/strategy-vwap-reversion@beta`.
+Сначала CI публикует beta и проверяет установку в чистом потребителе,
+затем ручной или еженедельный запуск выпуска продвигает её в `latest`.
+Номер версии пакета не означает подтверждение прибыльности стратегии.
 
 ## Формулы
 
@@ -224,8 +234,8 @@ CLI переопределяет режим цены и задержку, поэ
 
 До большого запуска проверьте активных тестировщиков, свободную память
 и полноту кеша. При первоначальном создании пакета бэктесты не запускались. Позднее проведено
-описанное ниже ограниченное исследование core. Обучение и публикация
-не выполнялись.
+описанное ниже исследование core и отдельное исследование локального gate.
+Публикация пакета не включает стратегию в рабочую композицию.
 
 ## Проверки и график
 
@@ -310,7 +320,7 @@ inside that narrower band. Shallow returns keep the original pending age and
 extreme; zero volume, gaps, session limits and expiry still invalidate it.
 These options are research hypotheses, not validated production defaults.
 
-## Optional local AI gate
+## Необязательный локальный AI-gate
 
 `VWAP_AI_GATE_ENABLED` defaults to `false`. Setting it to `true` selects the
 local deterministic gate at `minQuality=4`; it does not call an LLM. The

@@ -1,0 +1,49 @@
+name: Package release train
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "README.md"
+      - "docs/**"
+      - ".github/workflows/release.yml"
+      - "package.json"
+      - "yarn.lock"
+      - "tsconfig*.json"
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+  id-token: write
+
+concurrency:
+  group: npm-release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  beta:
+    if: >-
+      ${{
+        github.event_name == 'push' &&
+        !contains(github.event.head_commit.message, '[skip beta]')
+      }}
+    uses: TradeJS-Dev/TradeJS-Workflows/.github/workflows/strategy-publish.yml@v1
+    with:
+      channel: beta
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
+
+  stable:
+    if: >-
+      ${{
+        (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+      }}
+    uses: TradeJS-Dev/TradeJS-Workflows/.github/workflows/strategy-publish.yml@v1
+    with:
+      channel: stable
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}

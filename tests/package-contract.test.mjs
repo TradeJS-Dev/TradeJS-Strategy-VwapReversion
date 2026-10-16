@@ -25,6 +25,16 @@ test("package ships built entrypoints and future backtest configurations", () =>
     assert.ok(fs.existsSync(manifest.exports["."][key]));
   }
   assert.deepEqual(manifest.files, ["dist", "examples"]);
-  assert.equal(manifest.private, true);
+  assert.notEqual(manifest.private, true);
+  assert.match(manifest.version, /^\d+\.\d+\.\d+(?:-beta\.\d+)?$/);
+  assert.equal(manifest.publishConfig.access, "public");
+  assert.equal(manifest.publishConfig.provenance, true);
+  assert.equal(manifest.main, manifest.exports["."].require);
+  assert.equal(manifest.module, manifest.exports["."].import);
+  assert.equal(manifest.types, manifest.exports["."].types);
+  assert.equal(
+    manifest.repository.url,
+    "git+https://github.com/TradeJS-Dev/TradeJS-Strategy-VwapReversion.git",
+  );
   assert.ok(fs.existsSync("yarn.lock"));
 });
