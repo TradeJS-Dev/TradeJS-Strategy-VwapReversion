@@ -230,9 +230,31 @@ export function createVwapEngine({
         pending.direction === "LONG"
           ? Math.min(pending.extreme, low)
           : Math.max(pending.extreme, high);
-      const inside = close > lower && close < upper;
+      const returnMult = config.VWAP_RETURN_BAND_MULT || config.VWAP_BAND_MULT;
+      // Keep the original outer-band arithmetic exactly when the option is off.
+      const returnLower =
+        config.VWAP_RETURN_BAND_MULT === 0 ? lower : mean - returnMult * sigma;
+      const returnUpper =
+        config.VWAP_RETURN_BAND_MULT === 0 ? upper : mean + returnMult * sigma;
+      const inside = close > returnLower && close < returnUpper;
       const returning =
         pending.direction === "LONG" ? close < mean : close > mean;
+      // A close already past the target consumes the original excursion even
+      // when it jumped over the complete inner confirmation band.
+      if (
+        config.VWAP_RETURN_BAND_MULT > 0 &&
+        close > lower &&
+        close < upper &&
+        !returning
+      ) {
+        state.pending = null;
+        result.reason = "RETURN_PAST_TARGET";
+        return done();
+      }
+      if (!inside && close > lower && close < upper) {
+        result.reason = "WAIT_DEEP_RETURN";
+        return done();
+      }
       if (inside) {
         state.pending = null;
         result.reason = "RETURN_PAST_TARGET";

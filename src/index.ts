@@ -12,10 +12,12 @@ export * from "./config.js";
 export * from "./engine.js";
 export * from "./core.js";
 export * from "./figures.js";
+import { vwapReversionAiAdapter } from "./adapters/ai.js";
+export * from "./adapters/ai.js";
 const entry: ValidatedStrategyRegistryEntry<VwapReversionConfig> = {
   defaults: defaultConfig,
   parseConfig,
-  manifest: { name: STRATEGY_NAME },
+  manifest: { name: STRATEGY_NAME, aiAdapter: vwapReversionAiAdapter },
   createCore: createVwapReversionCore,
 };
 export const strategyEntries = defineStrategyPlugin({

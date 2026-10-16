@@ -298,3 +298,38 @@ LONG за весь период дал -9.2821 USDT, SHORT дал +26.1669 USDT.
 и не является основанием для включения реальной торговли.
 Результат относится к исследованной корзине, а не ко всему рынку.
 Проверка прибыльности 1h не проводилась.
+
+Research options are disabled by default. `VWAP_MAX_COST_SHARE=0` preserves
+entry admission. A positive value up to 1 limits proposed round-trip costs
+divided by the gross distance to the fixed VWAP target:
+`(feeRate + (slippageBps + impactBps)/10000) * (entry + target) / abs(target-entry)`.
+It uses only the requested closed-candle entry and target, without future fills.
+`VWAP_RETURN_BAND_MULT=0` preserves the original outer-band confirmation.
+A positive value no greater than `VWAP_BAND_MULT` requires a close strictly
+inside that narrower band. Shallow returns keep the original pending age and
+extreme; zero volume, gaps, session limits and expiry still invalidate it.
+These options are research hypotheses, not validated production defaults.
+
+## Optional local AI gate
+
+`VWAP_AI_GATE_ENABLED` defaults to `false`. Setting it to `true` selects the
+local deterministic gate at `minQuality=4`; it does not call an LLM. The
+research profile in `examples/backtest-grid-ai-gate-research.json` uses the
+confirmed return inside 1.5 sigma, a fixed 0.3% stop buffer, and the 7.5% cost
+share cap from the frozen core study.
+
+Valid LONG setups pass through. SHORT additionally requires requested stop
+distance at most 250 basis points and closed-signal Efficiency Ratio at least
+0.07. The core still enforces its maximum ER. Missing or invalid setup values
+block approval. Approved signals receive quality 5 and rejected signals quality
+1, so q4+ and q5+ contain the same signals; quality is not a probability.
+
+This profile is research-only. Rules were selected on the first 60% of whole
+timestamp groups in the cached-history export and frozen before evaluating
+the remaining 40%. The history had already been inspected during core work.
+Only 13 approved SHORT events occur in that later partition. The last year
+and recent windows remain weak. No production configuration is changed.
+
+The reported gate study filters completed raw-core trades. It does not simulate
+new detector opportunities or position occupancy after rejecting a signal,
+capital limits, or live fills. Validate those separately before activation.

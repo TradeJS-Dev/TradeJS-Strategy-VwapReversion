@@ -107,6 +107,18 @@ export const createVwapReversionCore: CreateStrategyCore<
       side * (signal.target - currentPrice) <= 0
     )
       return strategyApi.skip("VWAP_INVALID_GEOMETRY");
+    // Proposed round-trip costs use only the requested entry and fixed target.
+    // No realized exit, future fee, volume or future candle enters this guard.
+    const costShare =
+      ((config.RISK_FEE_RATE +
+        (config.RISK_SLIPPAGE_BPS + config.RISK_MARKET_IMPACT_BPS) / 10_000) *
+        (currentPrice + signal.target)) /
+      Math.abs(signal.target - currentPrice);
+    if (
+      config.VWAP_MAX_COST_SHARE > 0 &&
+      (!Number.isFinite(costShare) || costShare > config.VWAP_MAX_COST_SHARE)
+    )
+      return strategyApi.skip("VWAP_COST_SHARE");
     const economics = buildTradeEconomics({
       entryPrice: currentPrice,
       stopLossPrice: signal.stop,

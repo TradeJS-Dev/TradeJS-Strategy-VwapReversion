@@ -4,7 +4,10 @@ import type { StrategyConfig } from "@tradejs/types";
 export const STRATEGY_NAME = "VwapReversion";
 export interface VwapReversionConfig extends StrategyConfig {
   INTERVAL: "15" | "60";
+  VWAP_AI_GATE_ENABLED: boolean;
   VWAP_BAND_MULT: number;
+  VWAP_RETURN_BAND_MULT: number;
+  VWAP_MAX_COST_SHARE: number;
   VWAP_MIN_VOLUME_BARS: number;
   VWAP_ER_PERIOD: number;
   VWAP_MAX_ER: number;
@@ -22,11 +25,14 @@ export interface VwapReversionConfig extends StrategyConfig {
 }
 export const defaultConfig: VwapReversionConfig = {
   INTERVAL: "15",
+  VWAP_AI_GATE_ENABLED: false,
   BACKTEST_PRICE_MODE: "close",
   BACKTEST_ENTRY_DELAY_BARS: 0,
   VWAP_REQUIRE_PRICE_REVERSAL: true,
   VWAP_MIN_SESSION_BARS_LEFT: 1,
   VWAP_BAND_MULT: 2,
+  VWAP_RETURN_BAND_MULT: 0,
+  VWAP_MAX_COST_SHARE: 0,
   VWAP_MIN_VOLUME_BARS: 8,
   VWAP_ER_PERIOD: 8,
   VWAP_MAX_ER: 0.2,
@@ -81,6 +87,13 @@ export function parseConfig(input: unknown): VwapReversionConfig {
   ] as const) {
     if (config[key] <= 0) fail(key);
   }
+  if (
+    config.VWAP_RETURN_BAND_MULT < 0 ||
+    config.VWAP_RETURN_BAND_MULT > config.VWAP_BAND_MULT
+  )
+    fail("VWAP_RETURN_BAND_MULT");
+  if (config.VWAP_MAX_COST_SHARE < 0 || config.VWAP_MAX_COST_SHARE > 1)
+    fail("VWAP_MAX_COST_SHARE");
   if (config.VWAP_MAX_ER < 0 || config.VWAP_MAX_ER > 1) fail("VWAP_MAX_ER");
   if (config.VWAP_STOP_BUFFER_PCT >= 100) fail("VWAP_STOP_BUFFER_PCT");
   for (const key of [
