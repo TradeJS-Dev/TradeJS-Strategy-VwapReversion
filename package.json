@@ -1,6 +1,6 @@
 {
   "name": "@tradejs/strategy-vwap-reversion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Closed-candle UTC-session VWAP mean reversion for TradeJS.",
   "keywords": [
     "tradejs",
