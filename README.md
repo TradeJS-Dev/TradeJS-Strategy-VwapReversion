@@ -187,10 +187,13 @@ n = VWAP_ER_PERIOD = 8
 
 ## Подключение
 
-В Project после отдельного решения о подключении можно добавить локальную
-зависимость `@tradejs/strategy-vwap-reversion` через
-`file:../tradejs-strategy-vwap-reversion`. Сначала соберите этот пакет.
-В конфигурации Project зарегистрируйте модуль:
+В вашем Project установите опубликованную стабильную версию:
+
+```bash
+yarn add --exact @tradejs/strategy-vwap-reversion@0.1.1
+```
+
+Сохраните lock-файл. В конфигурации Project зарегистрируйте модуль:
 
 ```ts
 import { defineConfig } from "@tradejs/core/config";
